@@ -13,6 +13,7 @@ const hallFilter = document.querySelector('#hallFilter');
 const hallInput = document.querySelector('#hallInput');
 const planner = document.querySelector('#planner');
 const dialog = document.querySelector('#eventDialog');
+const detailsDialog = document.querySelector('#detailsDialog');
 const form = document.querySelector('#eventForm');
 let currentDate = startOfDay(new Date());
 let events = JSON.parse(localStorage.getItem(storageKey) || 'null') || seedEvents();
@@ -152,11 +153,12 @@ function renderMonth() {
   for (let date = new Date(gridStart); date <= gridEnd; date = addDays(date, 1)) {
     const dayEvents = visible.filter(event => event.occurrenceDate === isoDate(date));
     const classes = `${date.getMonth() !== monthStart.getMonth() ? 'other-month' : ''} ${isoDate(date) === isoDate(new Date()) ? 'today' : ''}`;
-    const cards = dayEvents.slice(0, 5).map(event => `<div class="month-event ${hallClasses[event.hall] || ''}" title="${event.title} · ${event.start} - ${event.end}">${event.start} ${event.title}</div>`).join('');
+    const cards = dayEvents.slice(0, 5).map(event => `<div class="month-event ${hallClasses[event.hall] || ''}" data-id="${event.id}" title="${event.title} · ${event.start} - ${event.end}">${event.start} ${event.title}</div>`).join('');
     const more = dayEvents.length > 5 ? `<div class="month-more">+ ${dayEvents.length - 5} weitere</div>` : '';
     cells.push(`<div class="month-day ${classes}"><div class="month-day-number">${date.getDate()}</div>${cards}${more}</div>`);
   }
   planner.innerHTML = `<div class="month-grid">${weekdays}${cells.join('')}</div>`;
+  planner.querySelectorAll('.month-event').forEach(item => item.addEventListener('click', () => openDetails(item.dataset.id)));
 }
 function render() {
   const view = document.querySelector('#viewSelect').value;
@@ -186,6 +188,18 @@ function render() {
     }).join('');
   }
   planner.innerHTML = `${html}</div>`;
+  planner.querySelectorAll('.event').forEach(item => item.addEventListener('click', () => openDetails(item.dataset.id)));
+}
+function openDetails(id) {
+  const event = events.find(item => item.id === id);
+  if (!event) return;
+  document.querySelector('#detailsTitle').textContent = event.title;
+  document.querySelector('#detailsHall').textContent = event.hall;
+  document.querySelector('#detailsDate').textContent = formatDate(new Date(`${event.date}T00:00:00`), { day: '2-digit', month: '2-digit', year: 'numeric' });
+  document.querySelector('#detailsTime').textContent = `${event.start} - ${event.end} Uhr`;
+  document.querySelector('#detailsType').textContent = event.type === 'game' ? 'Spiel' : event.type === 'event' ? 'Veranstaltung' : 'Training';
+  document.querySelector('#detailsRepeat').textContent = event.recurring ? event.frequency === 'biweekly' ? 'Alle 2 Wochen' : `Jede Woche${event.until ? ` bis ${formatDate(new Date(`${event.until}T00:00:00`), { day: '2-digit', month: '2-digit', year: 'numeric' })}` : ''}` : 'Einmaliger Termin';
+  detailsDialog.showModal();
 }
 function openDialog(id = '') { const event = events.find(item => item.id === id); document.querySelector('#dialogTitle').textContent = event ? 'Termin bearbeiten' : 'Neuer Termin'; document.querySelector('#eventId').value = event?.id || ''; document.querySelector('#titleInput').value = event?.title || ''; document.querySelector('#hallInput').value = event?.hall || halls[0]; document.querySelector('#dateInput').value = event?.date || isoDate(currentDate); document.querySelector('#startInput').value = event?.start || '17:00'; document.querySelector('#endInput').value = event?.end || '18:30'; document.querySelector('#typeInput').value = event?.type || 'training'; document.querySelector('#recurringInput').checked = event?.recurring || false; document.querySelector('#frequencyInput').value = event?.frequency || 'weekly'; document.querySelector('#untilInput').value = event?.until || ''; document.querySelectorAll('#dayPicker input').forEach(input => input.checked = event?.days?.includes(Number(input.value)) || (!event && Number(input.value) === new Date().getDay())); toggleRecurrence(); document.querySelector('#deleteButton').style.visibility = event ? 'visible' : 'hidden'; dialog.showModal(); }
 function toggleRecurrence() { document.querySelector('#recurrenceFields').classList.toggle('visible', document.querySelector('#recurringInput').checked); }
