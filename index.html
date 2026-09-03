@@ -13,7 +13,7 @@
 <body>
   <header class="topbar">
     <a class="brand" href="#"><span class="brand-mark">HP</span><span>Hallenplan</span></a>
-    <div class="topbar-actions"><span class="sync-status"><i></i> Auf diesem Gerät gespeichert</span><button class="icon-button" id="helpButton" aria-label="Hilfe">?</button></div>
+    <div class="topbar-actions"><span class="sync-status"><i></i> Aktuelle Daten aus Google Sheets</span><button class="icon-button" id="helpButton" aria-label="Hilfe">?</button></div>
   </header>
 
   <main class="shell">
@@ -21,13 +21,13 @@
 
     <section class="toolbar" aria-label="Planfilter">
       <div class="date-nav"><button class="small-button" id="previousWeek" aria-label="Vorherige Woche">←</button><button class="date-label" id="todayButton">Heute</button><button class="small-button" id="nextWeek" aria-label="Nächste Woche">→</button></div>
-      <div class="toolbar-divider"></div><label class="select-wrap"><span>Ansicht</span><select id="viewSelect"><option value="week">Woche</option><option value="day">Tag</option></select></label><label class="select-wrap"><span>Halle</span><select id="hallFilter"><option value="all">Alle Hallen</option></select></label>
+      <div class="toolbar-divider"></div><label class="select-wrap"><span>Ansicht</span><select id="viewSelect"><option value="week">Woche</option><option value="month">Monat</option><option value="day">Tag</option></select></label><label class="select-wrap"><span>Halle</span><select id="hallFilter"><option value="all">Alle Hallen</option></select></label>
     </section>
 
     <section class="summary-row"><div><strong id="weekTitle">Diese Woche</strong><span id="dateRange"></span></div><span class="event-count" id="eventCount">0 Termine</span></section>
     <section class="planner" id="planner" aria-live="polite"></section>
 
-    <section class="bottom-row"><div class="hall-legend"><span class="legend-dot hall-friesen"></span>Friesenhalle <span class="legend-dot hall-risum"></span>Kleine Halle Risum <span class="legend-dot hall-daenische"></span>Dänische Schule <span class="legend-dot hall-lindholm"></span>Kleine Halle Lindholm</div><button class="text-button" id="clearButton">PDF-Plan wiederherstellen</button></section>
+    <section class="bottom-row"><div class="hall-legend"><span class="legend-dot hall-friesen"></span>Friesenhalle <span class="legend-dot hall-risum"></span>Kleine Halle Risum <span class="legend-dot hall-daenische"></span>Dänische Schule <span class="legend-dot hall-lindholm"></span>Kleine Halle Lindholm</div></section>
   </main>
 
   <dialog id="eventDialog"><form method="dialog" id="eventForm"><div class="dialog-head"><div><p class="eyebrow">Termin verwalten</p><h2 id="dialogTitle">Neuer Termin</h2></div><button class="close-button" value="cancel" aria-label="Schließen">×</button></div><input type="hidden" id="eventId">
@@ -36,6 +36,10 @@
     <div class="form-actions"><button class="secondary-button close-form" value="cancel">Abbrechen</button><button class="danger-button" type="button" id="deleteButton">Löschen</button><button class="primary-button" value="default" type="submit">Termin speichern</button></div>
   </form></dialog>
   <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
+
   <script src="app.js"></script>
 </body>
 </html>
