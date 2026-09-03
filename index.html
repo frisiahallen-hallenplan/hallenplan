@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4efe7">
+  <title>Hallenplan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#"><span class="brand-mark">HP</span><span>Hallenplan</span></a>
+    <div class="topbar-actions"><span class="sync-status"><i></i> Auf diesem Gerät gespeichert</span><button class="icon-button" id="helpButton" aria-label="Hilfe">?</button></div>
+  </header>
+
+  <main class="shell">
+    <section class="intro">
+      <div><p class="eyebrow">Belegung im Überblick</p><h1>Alle Hallen,<br><em>ein klarer Plan.</em></h1><p class="intro-copy">Plane Trainings, Spiele und Veranstaltungen. Wiederkehrende Termine legst du einmal an.</p></div>
+      <button class="primary-button" id="addButton"><span>+</span> Termin hinzufügen</button>
+    </section>
+
+    <section class="toolbar" aria-label="Planfilter">
+      <div class="date-nav"><button class="small-button" id="previousWeek" aria-label="Vorherige Woche">←</button><button class="date-label" id="todayButton">Heute</button><button class="small-button" id="nextWeek" aria-label="Nächste Woche">→</button></div>
+      <div class="toolbar-divider"></div><label class="select-wrap"><span>Ansicht</span><select id="viewSelect"><option value="week">Woche</option><option value="day">Tag</option></select></label><label class="select-wrap"><span>Halle</span><select id="hallFilter"><option value="all">Alle Hallen</option></select></label>
+    </section>
+
+    <section class="summary-row"><div><strong id="weekTitle">Diese Woche</strong><span id="dateRange"></span></div><span class="event-count" id="eventCount">0 Termine</span></section>
+    <section class="planner" id="planner" aria-live="polite"></section>
+
+    <section class="bottom-row"><div class="hall-legend"><span class="legend-dot hall-friesen"></span>Friesenhalle <span class="legend-dot hall-risum"></span>Kleine Halle Risum <span class="legend-dot hall-daenische"></span>Dänische Schule <span class="legend-dot hall-lindholm"></span>Kleine Halle Lindholm</div><button class="text-button" id="clearButton">PDF-Plan wiederherstellen</button></section>
+  </main>
+
+  <dialog id="eventDialog"><form method="dialog" id="eventForm"><div class="dialog-head"><div><p class="eyebrow">Termin verwalten</p><h2 id="dialogTitle">Neuer Termin</h2></div><button class="close-button" value="cancel" aria-label="Schließen">×</button></div><input type="hidden" id="eventId">
+    <div class="form-grid"><label>Bezeichnung<input id="titleInput" required placeholder="z. B. Jugendtraining"></label><label>Halle<select id="hallInput" required></select></label><label>Datum<input id="dateInput" type="date" required></label><label>Beginn<input id="startInput" type="time" required></label><label>Ende<input id="endInput" type="time" required></label><label>Art<select id="typeInput"><option value="training">Training</option><option value="game">Spiel</option><option value="event">Veranstaltung</option></select></label></div>
+    <label class="recurring-check"><input id="recurringInput" type="checkbox"> <span>Wiederholt sich regelmäßig</span></label><div class="recurrence-fields" id="recurrenceFields"><label>Wiederholung<select id="frequencyInput"><option value="weekly">Jede Woche</option><option value="biweekly">Alle 2 Wochen</option></select></label><label>An diesen Tagen<div class="day-picker" id="dayPicker"></div></label><label>Endet am<input id="untilInput" type="date"></label></div>
+    <div class="form-actions"><button class="secondary-button close-form" value="cancel">Abbrechen</button><button class="danger-button" type="button" id="deleteButton">Löschen</button><button class="primary-button" value="default" type="submit">Termin speichern</button></div>
+  </form></dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>
