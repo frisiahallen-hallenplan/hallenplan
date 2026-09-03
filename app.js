@@ -138,8 +138,30 @@ async function loadGoogleEvents() {
   }
 }
 function occurrences(from, to) { const result = []; events.forEach(event => { const first = new Date(`${event.date}T00:00:00`); const limit = event.until ? new Date(`${event.until}T23:59:59`) : to; for (let date = new Date(from); date <= to && date <= limit; date = addDays(date, 1)) { const matches = event.recurring ? (event.days || []).includes(date.getDay()) && date >= first : isoDate(date) === event.date; const weeks = Math.floor((date - first) / 604800000); if (matches && (!event.recurring || event.frequency !== 'biweekly' || weeks % 2 === 0)) result.push({ ...event, occurrenceDate: isoDate(date) }); } }); return result; }
+function renderMonth() {
+  const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+  const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+  const gridStart = weekStart(monthStart);
+  const gridEnd = addDays(weekStart(addDays(monthEnd, 1)), 6);
+  const visible = occurrences(gridStart, gridEnd).filter(event => hallFilter.value === 'all' || event.hall === hallFilter.value);
+  document.querySelector('#weekTitle').textContent = formatDate(monthStart, { month: 'long', year: 'numeric' });
+  document.querySelector('#dateRange').textContent = `${formatDate(monthStart, { day: '2-digit', month: '2-digit', year: '2-digit' })} - ${formatDate(monthEnd, { day: '2-digit', month: '2-digit', year: '2-digit' })}`;
+  document.querySelector('#eventCount').textContent = `${visible.length} ${visible.length === 1 ? 'Termin' : 'Termine'}`;
+  const weekdays = dayNames.slice(1).concat(dayNames[0]).map(day => `<div class="month-weekday">${day}</div>`).join('');
+  const cells = [];
+  for (let date = new Date(gridStart); date <= gridEnd; date = addDays(date, 1)) {
+    const dayEvents = visible.filter(event => event.occurrenceDate === isoDate(date));
+    const classes = `${date.getMonth() !== monthStart.getMonth() ? 'other-month' : ''} ${isoDate(date) === isoDate(new Date()) ? 'today' : ''}`;
+    const cards = dayEvents.slice(0, 5).map(event => `<div class="month-event ${hallClasses[event.hall] || ''}" title="${event.title} · ${event.start} - ${event.end}">${event.start} ${event.title}</div>`).join('');
+    const more = dayEvents.length > 5 ? `<div class="month-more">+ ${dayEvents.length - 5} weitere</div>` : '';
+    cells.push(`<div class="month-day ${classes}"><div class="month-day-number">${date.getDate()}</div>${cards}${more}</div>`);
+  }
+  planner.innerHTML = `<div class="month-grid">${weekdays}${cells.join('')}</div>`;
+}
 function render() {
-  const isDay = document.querySelector('#viewSelect').value === 'day';
+  const view = document.querySelector('#viewSelect').value;
+  if (view === 'month') { renderMonth(); return; }
+  const isDay = view === 'day';
   const start = isDay ? currentDate : weekStart(currentDate);
   const end = isDay ? currentDate : addDays(start, 6);
   const visible = occurrences(start, end).filter(event => hallFilter.value === 'all' || event.hall === hallFilter.value);
@@ -164,13 +186,9 @@ function render() {
     }).join('');
   }
   planner.innerHTML = `${html}</div>`;
-  planner.querySelectorAll('.event').forEach(item => item.addEventListener('click', () => openDialog(item.dataset.id)));
 }
 function openDialog(id = '') { const event = events.find(item => item.id === id); document.querySelector('#dialogTitle').textContent = event ? 'Termin bearbeiten' : 'Neuer Termin'; document.querySelector('#eventId').value = event?.id || ''; document.querySelector('#titleInput').value = event?.title || ''; document.querySelector('#hallInput').value = event?.hall || halls[0]; document.querySelector('#dateInput').value = event?.date || isoDate(currentDate); document.querySelector('#startInput').value = event?.start || '17:00'; document.querySelector('#endInput').value = event?.end || '18:30'; document.querySelector('#typeInput').value = event?.type || 'training'; document.querySelector('#recurringInput').checked = event?.recurring || false; document.querySelector('#frequencyInput').value = event?.frequency || 'weekly'; document.querySelector('#untilInput').value = event?.until || ''; document.querySelectorAll('#dayPicker input').forEach(input => input.checked = event?.days?.includes(Number(input.value)) || (!event && Number(input.value) === new Date().getDay())); toggleRecurrence(); document.querySelector('#deleteButton').style.visibility = event ? 'visible' : 'hidden'; dialog.showModal(); }
 function toggleRecurrence() { document.querySelector('#recurrenceFields').classList.toggle('visible', document.querySelector('#recurringInput').checked); }
 function toast(message) { const item = document.querySelector('#toast'); item.textContent = message; item.classList.add('show'); setTimeout(() => item.classList.remove('show'), 2200); }
 ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'].forEach((day, index) => { const label = document.createElement('label'); label.className = 'day-choice'; label.innerHTML = `<input type="checkbox" value="${index}">${day}`; document.querySelector('#dayPicker').append(label); });
-document.querySelector('#recurringInput').addEventListener('change', toggleRecurrence); document.querySelector('#previousWeek').addEventListener('click', () => { currentDate = addDays(currentDate, -7); render(); }); document.querySelector('#nextWeek').addEventListener('click', () => { currentDate = addDays(currentDate, 7); render(); }); document.querySelector('#todayButton').addEventListener('click', () => { currentDate = startOfDay(new Date()); render(); }); document.querySelector('#viewSelect').addEventListener('change', render); hallFilter.addEventListener('change', render); document.querySelector('#clearButton').addEventListener('click', () => { events = seedEvents(); save(); render(); toast('Der PDF-Plan wurde wiederhergestellt.'); }); document.querySelector('#helpButton').addEventListener('click', () => toast('Termine anklicken, um sie zu bearbeiten.'));
-form.addEventListener('submit', event => { event.preventDefault(); const id = document.querySelector('#eventId').value; const data = { id: id || crypto.randomUUID(), title: document.querySelector('#titleInput').value.trim(), hall: hallInput.value, date: document.querySelector('#dateInput').value, start: document.querySelector('#startInput').value, end: document.querySelector('#endInput').value, type: document.querySelector('#typeInput').value, recurring: document.querySelector('#recurringInput').checked, frequency: document.querySelector('#frequencyInput').value, days: [...document.querySelectorAll('#dayPicker input:checked')].map(input => Number(input.value)), until: document.querySelector('#untilInput').value }; if (data.recurring && !data.days.length) { toast('Bitte mindestens einen Wochentag wählen.'); return; } events = id ? events.map(item => item.id === id ? data : item) : [...events, data]; save(); dialog.close(); render(); toast(id ? 'Termin aktualisiert.' : 'Termin hinzugefügt.'); }); document.querySelector('#deleteButton').addEventListener('click', () => { const id = document.querySelector('#eventId').value; events = events.filter(item => item.id !== id); save(); dialog.close(); render(); toast('Termin gelöscht.'); });
-render();
-loadGoogleEvents();
+document.querySelector('#recurringInput').addEventListener('change', toggleRecurrence); document.querySelector('#previousWeek').addEventListener('click', () => { const view = document.querySelector('#viewSelect').value; currentDate = view === 'month' ? new Date(currentDate.getFullYear(), currentDate.getMonth() - 1
