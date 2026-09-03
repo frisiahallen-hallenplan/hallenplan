@@ -35,6 +35,7 @@
     <label class="recurring-check"><input id="recurringInput" type="checkbox"> <span>Wiederholt sich regelmäßig</span></label><div class="recurrence-fields" id="recurrenceFields"><label>Wiederholung<select id="frequencyInput"><option value="weekly">Jede Woche</option><option value="biweekly">Alle 2 Wochen</option></select></label><label>An diesen Tagen<div class="day-picker" id="dayPicker"></div></label><label>Endet am<input id="untilInput" type="date"></label></div>
     <div class="form-actions"><button class="secondary-button close-form" value="cancel">Abbrechen</button><button class="danger-button" type="button" id="deleteButton">Löschen</button><button class="primary-button" value="default" type="submit">Termin speichern</button></div>
   </form></dialog>
+  <dialog id="detailsDialog"><div class="dialog-head"><div><p class="eyebrow">Terminübersicht</p><h2 id="detailsTitle">Termin</h2></div><form method="dialog"><button class="close-button" aria-label="Schließen">×</button></form></div><div class="details-list"><div><span>Halle</span><strong id="detailsHall"></strong></div><div><span>Datum</span><strong id="detailsDate"></strong></div><div><span>Uhrzeit</span><strong id="detailsTime"></strong></div><div><span>Art</span><strong id="detailsType"></strong></div><div><span>Wiederholung</span><strong id="detailsRepeat"></strong></div></div><form method="dialog" class="details-close"><button class="secondary-button">Schließen</button></form></dialog>
   <div class="toast" id="toast" role="status"></div>
   <script src="app.js?v=20260904"></script>
 </body>
