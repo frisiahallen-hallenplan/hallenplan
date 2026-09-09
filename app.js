@@ -187,7 +187,7 @@ function render() {
   document.querySelector('#weekTitle').textContent = isDay ? dayNamesLong[start.getDay()] : 'Diese Woche';
   document.querySelector('#eventCount').textContent = `${visible.length} ${visible.length === 1 ? 'Termin' : 'Termine'}`;
   const days = isDay ? [start] : Array.from({ length: 7 }, (_, index) => addDays(start, index));
-  if (!isDay && window.matchMedia('(max-width: 650px)').matches) {
+  if (!isDay && window.matchMedia('(max-width: 950px)').matches) {
     planner.innerHTML = renderWeekCompact(days, visible);
     planner.querySelectorAll('.week-compact-event').forEach(item => item.addEventListener('click', () => openDetails(item.dataset.id)));
     return;
