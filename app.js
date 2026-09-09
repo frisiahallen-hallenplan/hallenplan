@@ -160,6 +160,19 @@ function renderMonth() {
   planner.innerHTML = `<div class="month-grid">${weekdays}${cells.join('')}</div>`;
   planner.querySelectorAll('.month-event').forEach(item => item.addEventListener('click', () => openDetails(item.dataset.id)));
 }
+function renderWeekCompact(days, visible) {
+  const heads = days.map(day => {
+    const active = isoDate(day) === isoDate(new Date()) ? 'active' : '';
+    return `<div class="week-compact-head ${active}">${dayNames[day.getDay()]}<strong>${String(day.getDate()).padStart(2, '0')}</strong></div>`;
+  }).join('');
+  const cells = days.map(day => {
+    const dayEvents = visible.filter(event => event.occurrenceDate === isoDate(day)).sort((a, b) => a.start.localeCompare(b.start));
+    const chips = dayEvents.slice(0, 6).map(event => `<div class="week-compact-event ${hallClasses[event.hall] || ''}" data-id="${event.id}" title="${event.title} · ${event.start} - ${event.end} · ${event.hall}">${event.start}</div>`).join('');
+    const more = dayEvents.length > 6 ? `<div class="week-compact-more">+${dayEvents.length - 6}</div>` : '';
+    return `<div class="week-compact-day">${chips}${more}</div>`;
+  }).join('');
+  return `<div class="week-compact">${heads}${cells}</div>`;
+}
 function render() {
   const view = document.querySelector('#viewSelect').value;
   if (view === 'month') { renderMonth(); return; }
@@ -174,6 +187,11 @@ function render() {
   document.querySelector('#weekTitle').textContent = isDay ? dayNamesLong[start.getDay()] : 'Diese Woche';
   document.querySelector('#eventCount').textContent = `${visible.length} ${visible.length === 1 ? 'Termin' : 'Termine'}`;
   const days = isDay ? [start] : Array.from({ length: 7 }, (_, index) => addDays(start, index));
+  if (!isDay && window.matchMedia('(max-width: 650px)').matches) {
+    planner.innerHTML = renderWeekCompact(days, visible);
+    planner.querySelectorAll('.week-compact-event').forEach(item => item.addEventListener('click', () => openDetails(item.dataset.id)));
+    return;
+  }
   const headers = days.map(day => {
     const active = isoDate(day) === isoDate(new Date()) ? 'active' : '';
     return `<div class="day-head ${active}">${dayNames[day.getDay()]}<strong>${String(day.getDate()).padStart(2, '0')}</strong></div>`;
