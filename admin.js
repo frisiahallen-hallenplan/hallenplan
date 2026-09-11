@@ -113,9 +113,16 @@ async function ladeListe() {
   renderListe();
 }
 function renderListe() {
-  $('listCount').textContent = `${termine.length} ${termine.length === 1 ? 'Termin' : 'Termine'}`;
-  if (!termine.length) { eventList.innerHTML = '<div class="admin-empty">Noch keine Termine.</div>'; return; }
-  const sorted = [...termine].sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+  const hallwahl = $('hallFilter').value;
+  const gefiltert = hallwahl === 'all' ? termine : termine.filter(t => t.Halle === hallwahl);
+  $('listCount').textContent = hallwahl === 'all'
+    ? `${termine.length} ${termine.length === 1 ? 'Termin' : 'Termine'}`
+    : `${gefiltert.length} von ${termine.length} Terminen`;
+  if (!gefiltert.length) {
+    eventList.innerHTML = `<div class="admin-empty">${termine.length ? 'Keine Termine für diese Halle.' : 'Noch keine Termine.'}</div>`;
+    return;
+  }
+  const sorted = [...gefiltert].sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
   eventList.innerHTML = sorted.map(zeileHtml).join('');
   eventList.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => oeffneDialog(b.dataset.edit));
   eventList.querySelectorAll('[data-del]').forEach(b => b.onclick = () => loesche(b.dataset.del));
