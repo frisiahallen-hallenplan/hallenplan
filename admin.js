@@ -1,5 +1,23 @@
 // Bearbeitungs-Oberfläche für den Hallenplan.
 // Liest/schreibt über denselben Apps-Script-Endpunkt wie der öffentliche Plan.
+
+// Sichtbares Fehler-Banner (wichtig auf Handys, wo man keine Browser-Konsole öffnen kann).
+(function () {
+  function zeigeFehlerBanner(msg) {
+    let el = document.getElementById('globalErrorBanner');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'globalErrorBanner';
+      el.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:#fff;' +
+        'padding:10px 14px;font:12px/1.4 sans-serif;z-index:99999;white-space:pre-wrap;';
+      document.body.appendChild(el);
+    }
+    el.textContent = '⚠️ Technischer Fehler: ' + msg + ' — bitte Screenshot hiervon schicken.';
+  }
+  window.addEventListener('error', e => zeigeFehlerBanner(`${e.message} (${(e.filename || '').split('/').pop()}:${e.lineno})`));
+  window.addEventListener('unhandledrejection', e => zeigeFehlerBanner(String(e.reason && e.reason.message ? e.reason.message : e.reason)));
+})();
+
 const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxQoYZ4-mKq6C0xwSAqkMP2qkHSFXcW3qcV5BBSKCSw321cqRYgna72jZEi_vRVmncQ/exec';
 const PW_KEY = 'hallenplan-admin-pw';
 const halls = ['Friesenhalle', 'Kleine Halle Risum', 'Sporthalle Dänische Schule', 'Kleine Halle Lindholm'];
