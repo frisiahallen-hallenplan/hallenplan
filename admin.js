@@ -75,7 +75,7 @@ async function apiGet() {
 }
 async function apiPost(payload, versuch) {
   versuch = versuch || 1;
-  console.log(`[Hallenplan-Admin] sende (Versuch ${versuch}):`, payload);
+  console.log(`[Hallenplan-Admin] sende (Versuch ${versuch}):`, JSON.stringify(payload));
   try {
     const r = await fetch(ENDPOINT, { method: 'POST', body: JSON.stringify(payload) });
     const text = await r.text();
