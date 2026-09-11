@@ -192,6 +192,7 @@ $('deleteButton').onclick = () => { const id = $('eventId').value; eventDialog.c
 eventForm.addEventListener('submit', async e => {
   e.preventDefault();
   const wk = $('recurringInput').checked;
+  console.log('[Hallenplan-Admin] Formular: wiederkehrend =', wk, '| Wochentag-Auswahl =', $('weekdayInput').value);
   const t = {
     ID: $('eventId').value || '',
     Halle: $('hallInput').value,
