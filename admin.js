@@ -73,17 +73,24 @@ async function apiGet() {
   const r = await fetch(ENDPOINT);
   return r.json();
 }
-async function apiPost(payload) {
-  console.log('[Hallenplan-Admin] sende:', payload);
-  const r = await fetch(ENDPOINT, { method: 'POST', body: JSON.stringify(payload) });
-  const text = await r.text();
-  console.log('[Hallenplan-Admin] Antwort (roh):', text);
+async function apiPost(payload, versuch) {
+  versuch = versuch || 1;
+  console.log(`[Hallenplan-Admin] sende (Versuch ${versuch}):`, payload);
   try {
+    const r = await fetch(ENDPOINT, { method: 'POST', body: JSON.stringify(payload) });
+    const text = await r.text();
+    console.log('[Hallenplan-Admin] Antwort (roh):', text);
     const json = JSON.parse(text);
     console.log('[Hallenplan-Admin] Antwort (JSON):', json);
     return json;
   } catch (e) {
-    console.error('[Hallenplan-Admin] Antwort war kein JSON:', text);
+    console.warn(`[Hallenplan-Admin] Versuch ${versuch} fehlgeschlagen:`, e);
+    // Apps Script hat gelegentlich einen kurzen Aussetzer beim Umleiten der Antwort –
+    // ein zweiter Versuch nach kurzer Pause behebt das meist von selbst.
+    if (versuch < 2) {
+      await new Promise(resolve => setTimeout(resolve, 900));
+      return apiPost(payload, versuch + 1);
+    }
     return null;
   }
 }
