@@ -69,9 +69,18 @@ async function apiGet() {
   return r.json();
 }
 async function apiPost(payload) {
+  console.log('[Hallenplan-Admin] sende:', payload);
   const r = await fetch(ENDPOINT, { method: 'POST', body: JSON.stringify(payload) });
   const text = await r.text();
-  try { return JSON.parse(text); } catch (e) { return null; }
+  console.log('[Hallenplan-Admin] Antwort (roh):', text);
+  try {
+    const json = JSON.parse(text);
+    console.log('[Hallenplan-Admin] Antwort (JSON):', json);
+    return json;
+  } catch (e) {
+    console.error('[Hallenplan-Admin] Antwort war kein JSON:', text);
+    return null;
+  }
 }
 
 // ---------- Login ----------
