@@ -22,6 +22,8 @@ let termine = [];
 let importListe = [];
 
 halls.forEach(h => $('hallInput').add(new Option(h, h)));
+halls.forEach(h => $('hallFilter').add(new Option(h, h)));
+$('hallFilter').addEventListener('change', renderListe);
 
 // ---------- Datum / Zeit ----------
 function parseSheetDate(value) {
