@@ -127,7 +127,7 @@ async function ladeListe() {
   renderListe();
 }
 function renderListe() {
-  const hallwahl = $('hallFilter').value;
+  const hallwahl = hallFilterEl ? hallFilterEl.value : 'all';
   const gefiltert = hallwahl === 'all' ? termine : termine.filter(t => t.Halle === hallwahl);
   $('listCount').textContent = hallwahl === 'all'
     ? `${termine.length} ${termine.length === 1 ? 'Termin' : 'Termine'}`
