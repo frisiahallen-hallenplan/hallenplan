@@ -22,8 +22,13 @@ let termine = [];
 let importListe = [];
 
 halls.forEach(h => $('hallInput').add(new Option(h, h)));
-halls.forEach(h => $('hallFilter').add(new Option(h, h)));
-$('hallFilter').addEventListener('change', renderListe);
+const hallFilterEl = $('hallFilter');
+if (hallFilterEl) {
+  halls.forEach(h => hallFilterEl.add(new Option(h, h)));
+  hallFilterEl.addEventListener('change', renderListe);
+} else {
+  console.warn('[Hallenplan-Admin] #hallFilter nicht gefunden – Seite evtl. im Cache veraltet. Bitte Strg+F5 drücken.');
+}
 
 // ---------- Datum / Zeit ----------
 function parseSheetDate(value) {
