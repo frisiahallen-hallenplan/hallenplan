@@ -128,12 +128,21 @@ async function versuchLogin(pw) {
 }
 $('loginButton').onclick = async () => {
   const pw = $('pwInput').value;
-  if (!pw) return;
+  if (!pw) {
+    $('loginError').textContent = 'Bitte zuerst ein Passwort eingeben.';
+    $('loginError').hidden = false;
+    return;
+  }
   $('loginError').hidden = true;
   $('loginButton').disabled = true;
-  const ok = await versuchLogin(pw);
-  $('loginButton').disabled = false;
-  if (!ok) { $('loginError').textContent = 'Passwort falsch oder Server nicht erreichbar.'; $('loginError').hidden = false; }
+  $('loginButton').textContent = 'Prüfe …';
+  try {
+    const ok = await versuchLogin(pw);
+    if (!ok) { $('loginError').textContent = 'Passwort falsch oder Server nicht erreichbar.'; $('loginError').hidden = false; }
+  } finally {
+    $('loginButton').disabled = false;
+    $('loginButton').textContent = 'Anmelden';
+  }
 };
 $('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginButton').click(); });
 
