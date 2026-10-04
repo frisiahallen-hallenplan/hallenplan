@@ -33,3 +33,8 @@ a.icon-button{display:inline-flex;align-items:center;justify-content:center;text
 .admin-note{font-size:13px;color:var(--muted);line-height:1.5;margin:0 0 14px}
 .back-link{display:inline-block;margin-bottom:22px;color:var(--coral);text-decoration:none;font:500 13px 'DM Sans'}
 @media(max-width:650px){.admin-row{flex-wrap:wrap}.admin-actions{width:100%}.admin-actions button{flex:1}}
+
+.hall-buttons{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}.select-wrap+.hall-buttons{margin-left:0}.hall-button{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 12px;border-radius:20px;font:500 13px 'DM Sans';cursor:pointer;white-space:nowrap}.hall-button::before{content:'';width:9px;height:9px;border-radius:50%;background:var(--muted)}.hall-button.hall-friesen::before{background:#f4c400}.hall-button.hall-lindholm::before{background:#b9d9df}.hall-button.hall-risum::before{background:#202326}.hall-button.hall-daenische::before{background:#c8102e}.hall-button.hall-all::before{background:conic-gradient(#f4c400 0 25%,#b9d9df 0 50%,#202326 0 75%,#c8102e 0)}.hall-button:hover{border-color:var(--ink)}.hall-button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+@media(max-width:650px){.hall-buttons{width:100%;margin-left:0;gap:5px}.hall-button{padding:6px 9px;font-size:11px;gap:5px}.hall-button::before{width:7px;height:7px}}
+.toolbar{flex-wrap:wrap;row-gap:12px}
+.admin-bar .hall-buttons{margin-left:0}

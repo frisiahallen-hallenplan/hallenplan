@@ -40,13 +40,26 @@ let termine = [];
 let importListe = [];
 
 halls.forEach(h => $('hallInput').add(new Option(h, h)));
-const hallFilterEl = $('hallFilter');
-if (hallFilterEl) {
-  halls.forEach(h => hallFilterEl.add(new Option(h, h)));
-  hallFilterEl.addEventListener('change', renderListe);
-} else {
-  console.warn('[Hallenplan-Admin] #hallFilter nicht gefunden – Seite evtl. im Cache veraltet. Bitte Strg+F5 drücken.');
-}
+const hallFilterEl = { value: 'Friesenhalle' };
+[
+  ['Friesenhalle', 'Friesenhalle'],
+  ['Kleine Halle Lindholm', 'Kl. Halle Lindholm'],
+  ['Kleine Halle Risum', 'Kl. Halle Risum'],
+  ['Sporthalle Dänische Schule', 'Dänische Halle'],
+  ['all', 'Alle Hallen']
+].forEach(([value, label]) => {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `hall-button ${hallClasses[value] || 'hall-all'}`;
+  button.textContent = label;
+  button.setAttribute('aria-pressed', String(value === hallFilterEl.value));
+  button.addEventListener('click', () => {
+    hallFilterEl.value = value;
+    document.querySelectorAll('#hallButtons .hall-button').forEach(b => b.setAttribute('aria-pressed', String(b === button)));
+    renderListe();
+  });
+  $('hallButtons').append(button);
+});
 
 // ---------- Datum / Zeit ----------
 function parseSheetDate(value) {

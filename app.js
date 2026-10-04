@@ -9,7 +9,14 @@ const dayNames = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 const dayNamesLong = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
 const storageKey = 'hallenplan-events-v6';
 const googleSheetUrl = 'https://script.google.com/macros/s/AKfycbxQoYZ4-mKq6C0xwSAqkMP2qkHSFXcW3qcV5BBSKCSw321cqRYgna72jZEi_vRVmncQ/exec';
-const hallFilter = document.querySelector('#hallFilter');
+const hallFilter = { value: 'Friesenhalle' };
+const hallButtons = [
+  ['Friesenhalle', 'Friesenhalle'],
+  ['Kleine Halle Lindholm', 'Kl. Halle Lindholm'],
+  ['Kleine Halle Risum', 'Kl. Halle Risum'],
+  ['Sporthalle Dänische Schule', 'Dänische Halle'],
+  ['all', 'Alle Hallen']
+];
 const hallInput = document.querySelector('#hallInput');
 const planner = document.querySelector('#planner');
 const dialog = document.querySelector('#eventDialog');
@@ -17,7 +24,20 @@ const detailsDialog = document.querySelector('#detailsDialog');
 const form = document.querySelector('#eventForm');
 let currentDate = startOfDay(new Date());
 let events = JSON.parse(localStorage.getItem(storageKey) || 'null') || seedEvents();
-halls.forEach(hall => { hallFilter.add(new Option(hall, hall)); hallInput.add(new Option(hall, hall)); });
+halls.forEach(hall => hallInput.add(new Option(hall, hall)));
+hallButtons.forEach(([value, label]) => {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `hall-button ${hallClasses[value] || 'hall-all'}`;
+  button.textContent = label;
+  button.setAttribute('aria-pressed', String(value === hallFilter.value));
+  button.addEventListener('click', () => {
+    hallFilter.value = value;
+    document.querySelectorAll('#hallButtons .hall-button').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    render();
+  });
+  document.querySelector('#hallButtons').append(button);
+});
 
 function startOfDay(date) { const result = new Date(date); result.setHours(0, 0, 0, 0); return result; }
 function formatDate(date, options = {}) { return new Intl.DateTimeFormat('de-DE', options).format(date); }
@@ -223,7 +243,7 @@ function openDialog(id = '') { const event = events.find(item => item.id === id)
 function toggleRecurrence() { document.querySelector('#recurrenceFields').classList.toggle('visible', document.querySelector('#recurringInput').checked); }
 function toast(message) { const item = document.querySelector('#toast'); item.textContent = message; item.classList.add('show'); setTimeout(() => item.classList.remove('show'), 2200); }
 ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'].forEach((day, index) => { const label = document.createElement('label'); label.className = 'day-choice'; label.innerHTML = `<input type="checkbox" value="${index}">${day}`; document.querySelector('#dayPicker').append(label); });
-document.querySelector('#recurringInput').addEventListener('change', toggleRecurrence); document.querySelector('#previousWeek').addEventListener('click', () => { const view = document.querySelector('#viewSelect').value; currentDate = view === 'month' ? new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1) : addDays(currentDate, view === 'day' ? -1 : -7); render(); }); document.querySelector('#nextWeek').addEventListener('click', () => { const view = document.querySelector('#viewSelect').value; currentDate = view === 'month' ? new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1) : addDays(currentDate, view === 'day' ? 1 : 7); render(); }); document.querySelector('#todayButton').addEventListener('click', () => { currentDate = startOfDay(new Date()); render(); }); document.querySelector('#viewSelect').addEventListener('change', render); hallFilter.addEventListener('change', render); document.querySelector('#helpButton').addEventListener('click', () => toast('Die Termine werden über Google Sheets verwaltet.'));
+document.querySelector('#recurringInput').addEventListener('change', toggleRecurrence); document.querySelector('#previousWeek').addEventListener('click', () => { const view = document.querySelector('#viewSelect').value; currentDate = view === 'month' ? new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1) : addDays(currentDate, view === 'day' ? -1 : -7); render(); }); document.querySelector('#nextWeek').addEventListener('click', () => { const view = document.querySelector('#viewSelect').value; currentDate = view === 'month' ? new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1) : addDays(currentDate, view === 'day' ? 1 : 7); render(); }); document.querySelector('#todayButton').addEventListener('click', () => { currentDate = startOfDay(new Date()); render(); }); document.querySelector('#viewSelect').addEventListener('change', render); document.querySelector('#helpButton').addEventListener('click', () => toast('Die Termine werden über Google Sheets verwaltet.'));
 form.addEventListener('submit', event => { event.preventDefault(); const id = document.querySelector('#eventId').value; const data = { id: id || crypto.randomUUID(), title: document.querySelector('#titleInput').value.trim(), hall: hallInput.value, date: document.querySelector('#dateInput').value, start: document.querySelector('#startInput').value, end: document.querySelector('#endInput').value, type: document.querySelector('#typeInput').value, recurring: document.querySelector('#recurringInput').checked, frequency: document.querySelector('#frequencyInput').value, days: [...document.querySelectorAll('#dayPicker input:checked')].map(input => Number(input.value)), until: document.querySelector('#untilInput').value }; if (data.recurring && !data.days.length) { toast('Bitte mindestens einen Wochentag wählen.'); return; } events = id ? events.map(item => item.id === id ? data : item) : [...events, data]; save(); dialog.close(); render(); toast(id ? 'Termin aktualisiert.' : 'Termin hinzugefügt.'); }); document.querySelector('#deleteButton').addEventListener('click', () => { const id = document.querySelector('#eventId').value; events = events.filter(item => item.id !== id); save(); dialog.close(); render(); toast('Termin gelöscht.'); });
 let resizeTimer = null;
 window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(render, 150); });

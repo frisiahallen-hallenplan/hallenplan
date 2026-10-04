@@ -31,7 +31,7 @@
         <button class="primary-button" id="newButton"><span>+</span>Neuer Termin</button>
         <button class="secondary-button" id="importButton">⬆ Datei importieren</button>
         <input id="fileInput" type="file" accept=".csv,.xlsx,.xls" hidden>
-        <label class="select-wrap"><span>Halle</span><select id="hallFilter"><option value="all">Alle Hallen</option></select></label>
+        <div class="hall-buttons" id="hallButtons" role="group" aria-label="Halle wählen"></div>
         <span class="count" id="listCount">–</span>
       </div>
       <div class="admin-list" id="eventList"></div>
@@ -96,6 +96,6 @@
 
   <div class="toast" id="toast" role="status"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="admin.js?v=20260911g"></script>
+  <script src="admin.js?v=20261004"></script>
 </body>
 </html>
