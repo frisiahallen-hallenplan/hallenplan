@@ -201,6 +201,28 @@ function renderWeekCompact(days, visible) {
   }).join('');
   return `<div class="week-compact">${heads}${cells}</div>`;
 }
+// Verteilt sich überschneidende Termine eines Tages nebeneinander: Map Termin -> { lane, lanes }
+function layoutDay(list) {
+  const sorted = [...list].sort((a, b) => minutes(a.start) - minutes(b.start) || minutes(b.end) - minutes(a.end));
+  const result = new Map();
+  let cluster = [], laneEnds = [], clusterEnd = -1;
+  const flush = () => { cluster.forEach(event => { result.get(event).lanes = laneEnds.length; }); cluster = []; laneEnds = []; };
+  sorted.forEach(event => {
+    const start = minutes(event.start), end = Math.max(minutes(event.end), start + 30);
+    if (start >= clusterEnd) flush();
+    let lane = laneEnds.findIndex(laneEnd => laneEnd <= start);
+    if (lane < 0) { lane = laneEnds.length; laneEnds.push(end); } else laneEnds[lane] = end;
+    result.set(event, { lane, lanes: 1 });
+    cluster.push(event);
+    clusterEnd = Math.max(clusterEnd, end);
+  });
+  flush();
+  return result;
+}
+function eventStyle(event, { lane, lanes }) {
+  const start = minutes(event.start), duration = Math.max(minutes(event.end) - start, 30);
+  return `top:calc(var(--hour) * ${(start % 60) / 60});height:calc(var(--hour) * ${duration / 60} - 4px);left:calc(6px + (100% - 12px) * ${lane / lanes});width:calc((100% - 12px) / ${lanes} - ${lanes > 1 ? 3 : 0}px)`;
+}
 function render() {
   const view = document.querySelector('#viewSelect').value;
   if (view === 'month') { renderMonth(); return; }
@@ -225,11 +247,12 @@ function render() {
     return `<div class="day-head ${active}">${dayNames[day.getDay()]}<strong>${String(day.getDate()).padStart(2, '0')}</strong></div>`;
   }).join('');
   let html = `<div class="planner-grid ${isDay ? 'day-view' : ''}"><div class="day-head"></div>${headers}`;
+  const layouts = new Map(days.map(day => [isoDate(day), layoutDay(visible.filter(event => event.occurrenceDate === isoDate(day)))]));
   for (let hour = 8; hour <= 21; hour++) {
     html += `<div class="time-label">${String(hour).padStart(2, '0')}:00</div>`;
     html += days.map(day => {
       const dayEvents = visible.filter(event => event.occurrenceDate === isoDate(day) && Number(event.start.slice(0, 2)) === hour);
-      const cards = dayEvents.map(event => `<article class="event ${event.type} ${hallClasses[event.hall] || ''}" data-id="${event.id}"><strong>${event.title}</strong><small>${event.start} - ${event.end} · ${event.hall}</small></article>`).join('');
+      const cards = dayEvents.map(event => `<article class="event ${event.type} ${hallClasses[event.hall] || ''}" data-id="${event.id}" style="${eventStyle(event, layouts.get(isoDate(day)).get(event))}"><strong>${event.title}</strong><small>${event.start} - ${event.end} · ${event.hall}</small></article>`).join('');
       return `<div class="day-column">${cards}</div>`;
     }).join('');
   }

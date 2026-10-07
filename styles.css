@@ -39,3 +39,4 @@ a.icon-button{display:inline-flex;align-items:center;justify-content:center;text
 .toolbar{flex-wrap:wrap;row-gap:12px}
 .admin-bar .hall-buttons{margin-left:0}
 .override-field{margin-top:17px}.override-field small{font-size:11px;color:var(--muted)}.admin-badge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:10px;background:var(--ink);color:#fff;font:600 10px 'DM Sans';font-style:normal;vertical-align:2px}
+.planner-grid{--hour:70px}.planner .event{right:auto;min-height:0;z-index:1}@media(max-width:650px){.planner-grid{--hour:60px}}
