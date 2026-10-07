@@ -138,12 +138,20 @@ function parseSheetDate(value) {
   if (parts[0].length === 4) return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
   return `${parts[2].length === 2 ? `20${parts[2]}` : parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
 }
+// "Überschreibt"-Spalte: 'tag' = ganzen Tag, 'zeitraum' = nur überschneidende Termine derselben Halle ausblenden
+function normVorrang(value) { const text = String(value || '').toLowerCase(); return text.includes('tag') ? 'tag' : text.includes('zeit') ? 'zeitraum' : ''; }
+function minutes(time) { const [h, m] = String(time || '').split(':').map(Number); return (h || 0) * 60 + (m || 0); }
+function withoutOverridden(list) {
+  const overrides = list.filter(item => item.override);
+  return list.filter(item => item.override || !overrides.some(o => o.hall === item.hall && o.occurrenceDate === item.occurrenceDate &&
+    (o.override === 'tag' || (minutes(item.start) < minutes(o.end) && minutes(o.start) < minutes(item.end)))));
+}
 function parseSheetEvents(rows) {
   const dayNumbers = { Sonntag: 0, Montag: 1, Dienstag: 2, Mittwoch: 3, Donnerstag: 4, Freitag: 5, Samstag: 6 };
   return rows.map(row => {
     const recurring = String(row.Wiederholung || '').toLowerCase().includes('woche');
     const type = String(row.Art || '').toLowerCase().includes('spiel') ? 'game' : String(row.Art || '').toLowerCase().includes('veranstaltung') ? 'event' : 'training';
-    return { id: crypto.randomUUID(), title: row.Termin || 'Termin', hall: row.Halle || halls[0], date: parseSheetDate(row.Datum), start: row.Beginn || '17:00', end: row.Ende || '18:00', type, recurring, days: recurring ? [dayNumbers[row.Wochentag]] : [], frequency: String(row.Wiederholung || '').toLowerCase().includes('2') ? 'biweekly' : 'weekly', until: parseSheetDate(row['Gültig bis']) };
+    return { id: crypto.randomUUID(), title: row.Termin || 'Termin', hall: row.Halle || halls[0], date: parseSheetDate(row.Datum), start: row.Beginn || '17:00', end: row.Ende || '18:00', type, recurring, days: recurring ? [dayNumbers[row.Wochentag]] : [], frequency: String(row.Wiederholung || '').toLowerCase().includes('2') ? 'biweekly' : 'weekly', until: parseSheetDate(row['Gültig bis']), override: normVorrang(row['Überschreibt']) };
   }).filter(event => event.date && event.hall);
 }
 async function loadGoogleEvents() {
@@ -158,7 +166,7 @@ async function loadGoogleEvents() {
     console.warn('Google-Termine konnten nicht geladen werden:', error);
   }
 }
-function occurrences(from, to) { const result = []; events.forEach(event => { const first = new Date(`${event.date}T00:00:00`); const limit = event.until ? new Date(`${event.until}T23:59:59`) : to; for (let date = new Date(from); date <= to && date <= limit; date = addDays(date, 1)) { const matches = event.recurring ? (event.days || []).includes(date.getDay()) && date >= first : isoDate(date) === event.date; const weeks = Math.floor((date - first) / 604800000); if (matches && (!event.recurring || event.frequency !== 'biweekly' || weeks % 2 === 0)) result.push({ ...event, occurrenceDate: isoDate(date) }); } }); return result; }
+function occurrences(from, to) { const result = []; events.forEach(event => { const first = new Date(`${event.date}T00:00:00`); const limit = event.until ? new Date(`${event.until}T23:59:59`) : to; for (let date = new Date(from); date <= to && date <= limit; date = addDays(date, 1)) { const matches = event.recurring ? (event.days || []).includes(date.getDay()) && date >= first : isoDate(date) === event.date; const weeks = Math.floor((date - first) / 604800000); if (matches && (!event.recurring || event.frequency !== 'biweekly' || weeks % 2 === 0)) result.push({ ...event, occurrenceDate: isoDate(date) }); } }); return withoutOverridden(result); }
 function renderMonth() {
   const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
   const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);

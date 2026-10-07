@@ -28,7 +28,7 @@ const hallClasses = {
   'Kleine Halle Lindholm': 'hall-lindholm'
 };
 const WOCHENTAGE = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
-const SPALTEN = ['Halle', 'Termin', 'Wochentag', 'Datum', 'Beginn', 'Ende', 'Wiederholung', 'Gültig bis', 'Art'];
+const SPALTEN = ['Halle', 'Termin', 'Wochentag', 'Datum', 'Beginn', 'Ende', 'Wiederholung', 'Gültig bis', 'Art', 'Überschreibt'];
 
 const $ = id => document.getElementById(id);
 const loginBox = $('loginBox'), editorBox = $('editorBox'), eventList = $('eventList');
@@ -97,6 +97,7 @@ function toast(message) {
   setTimeout(() => item.classList.remove('show'), 2600);
 }
 function istWiederkehrend(t) { return /woche/i.test(t.Wiederholung || ''); }
+function vorrangText(t) { const v = String(t['Überschreibt'] || '').toLowerCase(); return v.includes('tag') ? 'Ganzer Tag' : v.includes('zeit') ? 'Zeitraum' : ''; }
 function ist14tägig(t) { return /2|zwei/i.test(t.Wiederholung || ''); }
 
 // ---------- Netzwerk ----------
@@ -194,7 +195,7 @@ function zeileHtml(t) {
     : `${t.Datum || '?'} · ${t.Beginn || '?'}–${t.Ende || '?'}`;
   return `<div class="admin-row">
     <span class="admin-dot ${hallClasses[t.Halle] || ''}"></span>
-    <div class="admin-row-main"><strong>${escapeHtml(t.Termin || 'Ohne Titel')}</strong><span>${escapeHtml(t.Halle || '–')} · ${escapeHtml(meta)}</span></div>
+    <div class="admin-row-main"><strong>${escapeHtml(t.Termin || 'Ohne Titel')}${vorrangText(t) ? ` <em class="admin-badge">blendet aus: ${vorrangText(t)}</em>` : ''}</strong><span>${escapeHtml(t.Halle || '–')} · ${escapeHtml(meta)}</span></div>
     <div class="admin-actions"><button data-edit="${escapeHtml(t.ID)}">Bearbeiten</button><button class="del" data-del="${escapeHtml(t.ID)}">Löschen</button></div>
   </div>`;
 }
@@ -220,6 +221,7 @@ function oeffneDialog(id) {
   $('frequencyInput').value = t && ist14tägig(t) ? 'Alle 2 Wochen' : 'Jede Woche';
   $('weekdayInput').value = (t && t.Wochentag && WOCHENTAGE.includes(t.Wochentag)) ? t.Wochentag : 'Montag';
   $('untilInput').value = t && t['Gültig bis'] ? parseSheetDate(t['Gültig bis']) : '';
+  $('overrideInput').value = t ? vorrangText(t) : '';
   toggleRecurrence();
   $('deleteButton').style.visibility = t ? 'visible' : 'hidden';
   eventDialog.showModal();
@@ -243,7 +245,8 @@ eventForm.addEventListener('submit', async e => {
     Ende: $('endInput').value,
     Wiederholung: wk ? $('frequencyInput').value : '',
     'Gültig bis': wk && $('untilInput').value ? isoToGerman($('untilInput').value) : '',
-    Art: $('typeInput').value
+    Art: $('typeInput').value,
+    'Überschreibt': $('overrideInput').value
   };
   if (!t.Termin) { toast('Bitte eine Bezeichnung eingeben.'); return; }
   eventDialog.close();
@@ -251,6 +254,9 @@ eventForm.addEventListener('submit', async e => {
     t.ID ? { aktion: 'aendern', passwort, termin: t } : { aktion: 'anlegen', passwort, termin: t },
     t.ID ? 'Termin geändert.' : 'Termin hinzugefügt.'
   );
+  if (t['Überschreibt'] && termine.length && !('Überschreibt' in termine[0])) {
+    toast('Achtung: Im Google Sheet fehlt die Spalte „Überschreibt“ – das Ausblenden wurde nicht gespeichert.');
+  }
 });
 
 async function loesche(id) {
@@ -320,7 +326,8 @@ function zeileZuTermin(o) {
     Ende: normZeit(feld(o, 'Ende', 'bis Uhr', 'Schluss')),
     Wiederholung: feld(o, 'Wiederholung', 'Rhythmus', 'Turnus'),
     'Gültig bis': bis ? isoToGerman(parseSheetDate(bis)) || bis : '',
-    Art: normArt(feld(o, 'Art', 'Typ', 'Kategorie'))
+    Art: normArt(feld(o, 'Art', 'Typ', 'Kategorie')),
+    'Überschreibt': vorrangText({ 'Überschreibt': feld(o, 'Überschreibt', 'Vorrang', 'Ausblenden') })
   };
 }
 

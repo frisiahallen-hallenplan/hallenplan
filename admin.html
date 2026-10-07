@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261004b">
+  <link rel="stylesheet" href="styles.css?v=20261007">
 </head>
 <body>
   <header class="topbar">
@@ -56,6 +56,11 @@
         <option value="Veranstaltung">Veranstaltung</option>
       </select></label>
     </div>
+    <label class="override-field">Andere Termine dieser Halle<select id="overrideInput">
+      <option value="">nicht ausblenden</option>
+      <option value="Zeitraum">im selben Zeitraum ausblenden</option>
+      <option value="Ganzer Tag">am ganzen Tag ausblenden</option>
+    </select><small>Die anderen Termine bleiben gespeichert und werden nur im Plan an diesem Tag nicht angezeigt.</small></label>
     <label class="recurring-check"><input id="recurringInput" type="checkbox"> <span>Wiederholt sich regelmäßig</span></label>
     <div class="recurrence-fields" id="recurrenceFields">
       <label>Wiederholung<select id="frequencyInput">
@@ -96,6 +101,6 @@
 
   <div class="toast" id="toast" role="status"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="admin.js?v=20261004"></script>
+  <script src="admin.js?v=20261007"></script>
 </body>
 </html>

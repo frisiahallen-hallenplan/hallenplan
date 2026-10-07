@@ -38,3 +38,4 @@ a.icon-button{display:inline-flex;align-items:center;justify-content:center;text
 @media(max-width:650px){.hall-buttons{width:100%;margin-left:0;gap:5px}.hall-button{padding:6px 9px;font-size:11px;gap:5px}.hall-button::before{width:7px;height:7px}}
 .toolbar{flex-wrap:wrap;row-gap:12px}
 .admin-bar .hall-buttons{margin-left:0}
+.override-field{margin-top:17px}.override-field small{font-size:11px;color:var(--muted)}.admin-badge{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:10px;background:var(--ink);color:#fff;font:600 10px 'DM Sans';font-style:normal;vertical-align:2px}
