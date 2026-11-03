@@ -162,7 +162,7 @@ $('pwInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginB
 
 // ---------- Liste ----------
 function nichtLeer(r) { return String(r.Termin || '').trim() !== '' || String(r.Halle || '').trim() !== ''; }
-const wtOrder = { 'Montag': 1, 'Dienstag': 2, 'Mittwoch': 3, 'Donnerstag': 4, 'Freitag': 5, 'Samstag': 6, 'Sonntag': 7 };
+const wtOrder = { 'Täglich': 0, 'Montag': 1, 'Dienstag': 2, 'Mittwoch': 3, 'Donnerstag': 4, 'Freitag': 5, 'Samstag': 6, 'Sonntag': 7 };
 function sortKey(t) {
   return istWiederkehrend(t)
     ? `1_${wtOrder[t.Wochentag] || 9}_${t.Beginn || ''}`
@@ -219,7 +219,7 @@ function oeffneDialog(id) {
   const wk = t ? istWiederkehrend(t) : false;
   $('recurringInput').checked = wk;
   $('frequencyInput').value = t && ist14tägig(t) ? 'Alle 2 Wochen' : 'Jede Woche';
-  $('weekdayInput').value = (t && t.Wochentag && WOCHENTAGE.includes(t.Wochentag)) ? t.Wochentag : 'Montag';
+  $('weekdayInput').value = (t && t.Wochentag && (WOCHENTAGE.includes(t.Wochentag) || t.Wochentag === 'Täglich')) ? t.Wochentag : 'Montag';
   $('untilInput').value = t && t['Gültig bis'] ? parseSheetDate(t['Gültig bis']) : '';
   $('overrideInput').value = t ? vorrangText(t) : '';
   toggleRecurrence();
@@ -301,6 +301,7 @@ function normArt(v) {
 }
 function normWochentag(v) {
   const s = String(v || '').toLowerCase();
+  if (/t(ä|ae)glich|jeden tag/.test(s)) return 'Täglich';
   return WOCHENTAGE.find(w => s.startsWith(w.slice(0, 2).toLowerCase())) || (WOCHENTAGE.includes(v) ? v : '');
 }
 function normKey(s) {
