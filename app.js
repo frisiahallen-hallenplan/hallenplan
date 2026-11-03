@@ -151,7 +151,7 @@ function parseSheetEvents(rows) {
   return rows.map(row => {
     const recurring = String(row.Wiederholung || '').toLowerCase().includes('woche');
     const type = String(row.Art || '').toLowerCase().includes('spiel') ? 'game' : String(row.Art || '').toLowerCase().includes('veranstaltung') ? 'event' : 'training';
-    return { id: crypto.randomUUID(), title: row.Termin || 'Termin', hall: row.Halle || halls[0], date: parseSheetDate(row.Datum), start: row.Beginn || '17:00', end: row.Ende || '18:00', type, recurring, days: recurring ? [dayNumbers[row.Wochentag]] : [], frequency: String(row.Wiederholung || '').toLowerCase().includes('2') ? 'biweekly' : 'weekly', until: parseSheetDate(row['Gültig bis']), override: normVorrang(row['Überschreibt']) };
+    return { id: crypto.randomUUID(), title: row.Termin || 'Termin', hall: row.Halle || halls[0], date: parseSheetDate(row.Datum), start: row.Beginn || '17:00', end: row.Ende || '18:00', type, recurring, days: recurring ? (/t(ä|ae)glich/i.test(row.Wochentag || '') ? [0, 1, 2, 3, 4, 5, 6] : [dayNumbers[row.Wochentag]]) : [], frequency: String(row.Wiederholung || '').toLowerCase().includes('2') ? 'biweekly' : 'weekly', until: parseSheetDate(row['Gültig bis']), override: normVorrang(row['Überschreibt']) };
   }).filter(event => event.date && event.hall);
 }
 async function loadGoogleEvents() {
