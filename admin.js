@@ -413,6 +413,15 @@ $('importAppend').onclick = async () => {
   await sende({ aktion: 'ergaenzen', passwort, termine: importListe }, `${importListe.length} Termine ergänzt.`);
 };
 
+// ---------- Druck (PDF) Friesenhalle ----------
+$('printButton').onclick = () => $('printDialog').showModal();
+$('printClose').onclick = () => $('printDialog').close();
+$('printCancel').onclick = () => $('printDialog').close();
+$('printGo').onclick = () => {
+  $('printDialog').close();
+  window.friesenhallenDruck.drucken(termine, $('printRange').value);
+};
+
 // ---------- Start ----------
 if (passwort) {
   versuchLogin(passwort).then(ok => { if (!ok) { try { localStorage.removeItem(PW_KEY); } catch (e) {} } });
