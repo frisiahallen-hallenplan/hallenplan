@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261106">
+  <link rel="stylesheet" href="styles.css?v=20261109e">
 </head>
 <body>
   <header class="topbar">
@@ -113,7 +113,11 @@
       <option value="monat">Aktueller Monat</option>
       <option value="naechsterMonat">Nächster Monat</option>
     </select></label>
-    <p class="admin-note print-note">Im Druckfenster als Drucker <strong>„Als PDF speichern“</strong> wählen – oder direkt auf Papier drucken.</p>
+    <label class="print-format">Format (Wochen)<select id="printFormat">
+      <option value="hoch">Hochformat – Tage untereinander</option>
+      <option value="quer">Querformat – Tage in zwei Spalten</option>
+    </select></label>
+    <p class="admin-note print-note">Der Monatsplan wird immer im Querformat gedruckt. Im Druckfenster als Drucker <strong>„Als PDF speichern“</strong> wählen – oder direkt auf Papier drucken.</p>
     <div class="form-actions">
       <button class="secondary-button" value="cancel" type="button" id="printCancel">Abbrechen</button>
       <button class="primary-button" type="button" id="printGo">Drucken / PDF</button>
@@ -122,7 +126,7 @@
 
   <div class="toast" id="toast" role="status"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="druck.js?v=20261109d"></script>
-  <script src="admin.js?v=20261106"></script>
+  <script src="druck.js?v=20261109e"></script>
+  <script src="admin.js?v=20261109e"></script>
 </body>
 </html>
