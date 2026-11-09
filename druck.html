@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=1120">
+  <meta name="viewport" content="width=900">
   <title>Friesenhalle – Druckansicht</title>
   <style id="druckStil"></style>
 </head>
@@ -14,17 +14,17 @@
     <span>iPhone/iPad: im Druckfenster oben rechts auf <b>Teilen</b> tippen → <b>In Dateien sichern</b> – oder direkt drucken.</span>
   </div>
   <div id="inhalt"><p>Plan wird geladen …</p></div>
-  <script src="druck.js?v=20261109b"></script>
+  <script src="druck.js?v=20261109c"></script>
   <script>
     (async () => {
       const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxQoYZ4-mKq6C0xwSAqkMP2qkHSFXcW3qcV5BBSKCSw321cqRYgna72jZEi_vRVmncQ/exec';
       const druck = window.friesenhallenDruck;
       const inhalt = document.getElementById('inhalt');
-      document.getElementById('druckStil').textContent = druck.css;
       try {
         const rows = await (await fetch(ENDPOINT)).json();
-        const { dateiname, seiten } = druck.teile(rows, new URLSearchParams(location.search).get('modus') || 'naechste');
+        const { dateiname, seiten, format } = druck.teile(rows, new URLSearchParams(location.search).get('modus') || 'naechste');
         document.title = dateiname;
+        document.getElementById('druckStil').textContent = druck.css(format);
         inhalt.innerHTML = seiten;
       } catch (e) {
         inhalt.textContent = 'Der Plan konnte nicht geladen werden. Bitte Internetverbindung prüfen und neu laden.';
