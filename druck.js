@@ -67,18 +67,35 @@
 
   // ---------- Seitenaufbau ----------
   function kopf(titel, unter) { return `<header><h1>${esc(titel)}</h1><p>${esc(unter)}</p></header>`; }
-  function wochenSeite(liste, montag, fuss) {
+  // quer: Tage auf zwei Spalten verteilt (Querformat), sonst eine Liste untereinander (Hochformat)
+  function wochenSeite(liste, montag, fuss, quer) {
     const sonntag = addDays(montag, 6);
-    let tage = '';
-    for (let i = 0; i < 7; i++) {
+    const tage = [...Array(7)].map((_, i) => {
       const tag = addDays(montag, i);
-      const t = liste.filter(e => e.occurrenceDate === isoDate(tag));
-      const name = `<th rowspan="${Math.max(t.length, 1)}">${TAGE[tag.getDay()]}<span>${deDate(tag, false)}</span></th>`;
-      tage += `<tbody class="tag">` + (t.length
-        ? t.map((e, n) => `<tr class="${e.type}">${n === 0 ? name : ''}<td class="zeit">${e.start} – ${e.end}</td><td class="titel">${esc(e.title)}</td><td class="art">${e.type !== 'training' ? ART[e.type] : ''}</td></tr>`).join('')
-        : `<tr>${name}<td colspan="3" class="leer">Keine Termine</td></tr>`) + '</tbody>';
+      return { tag, termine: liste.filter(e => e.occurrenceDate === isoDate(tag)) };
+    });
+    const tabelle = auswahl => `<table class="liste">${auswahl.map(({ tag, termine }) => {
+      const name = `<th rowspan="${Math.max(termine.length, 1)}">${TAGE[tag.getDay()]}<span>${deDate(tag, false)}</span></th>`;
+      const art = e => e.type !== 'training' ? ART[e.type] : '';
+      return '<tbody class="tag">' + (termine.length
+        ? termine.map((e, n) => `<tr class="${e.type}">${n === 0 ? name : ''}<td class="zeit">${e.start} – ${e.end}</td>` +
+            (quer ? `<td class="titel">${esc(e.title)}${art(e) ? ` <b class="art">${art(e)}</b>` : ''}</td>` : `<td class="titel">${esc(e.title)}</td><td class="art">${art(e)}</td>`) + '</tr>').join('')
+        : `<tr>${name}<td colspan="${quer ? 2 : 3}" class="leer">Keine Termine</td></tr>`) + '</tbody>';
+    }).join('')}</table>`;
+    let inhalt;
+    if (quer) {
+      // Trennstelle so wählen, dass beide Spalten etwa gleich lang werden
+      const hoehe = tage.map(t => Math.max(t.termine.length, 1) + 0.6);
+      let teilung = 4, kleinste = Infinity;
+      for (let k = 2; k <= 5; k++) {
+        const links = hoehe.slice(0, k).reduce((a, b) => a + b, 0), rechts = hoehe.slice(k).reduce((a, b) => a + b, 0);
+        if (Math.max(links, rechts) < kleinste) { kleinste = Math.max(links, rechts); teilung = k; }
+      }
+      inhalt = `<div class="spalten">${tabelle(tage.slice(0, teilung))}${tabelle(tage.slice(teilung))}</div>`;
+    } else {
+      inhalt = tabelle(tage);
     }
-    return `<section class="seite woche-seite">${kopf(`${HALLE} – Belegung`, `SV Frisia 03 · ${deDate(montag)} – ${deDate(sonntag)} (KW ${kalenderwoche(montag)})`)}<table class="liste">${tage}</table>${fuss}</section>`;
+    return `<section class="seite woche-seite${quer ? ' quer' : ''}">${kopf(`${HALLE} – Belegung`, `SV Frisia 03 · ${deDate(montag)} – ${deDate(sonntag)} (KW ${kalenderwoche(montag)})`)}${inhalt}${fuss}</section>`;
   }
   function monatsSeite(liste, ersterTag, fuss) {
     const letzterTag = new Date(ersterTag.getFullYear(), ersterTag.getMonth() + 1, 0);
@@ -107,6 +124,9 @@ header h1{margin:0;font-size:22pt;color:#000}header p{margin:0;font-size:13pt;co
 .liste td.art{width:30mm;text-align:right;font-size:11.5pt;font-weight:600;color:#9a6b00}
 .liste tr.game td{background:#fdf3c4;-webkit-print-color-adjust:exact;print-color-adjust:exact}.liste tr.game td.art{color:#000}
 .liste td.leer{color:#6f8180;font-style:italic}
+.quer .spalten{display:grid;grid-template-columns:1fr 1fr;gap:6mm;align-items:start}
+.quer .liste th{width:27mm;font-size:15pt;padding:4px 4px}.quer .liste td{font-size:14.5pt}.quer .liste td.zeit{width:35mm;padding-left:4px;padding-right:4px}
+.quer .liste .art{font-size:10.5pt;margin-left:4px;color:#9a6b00}.quer .liste tr.game .art{color:#000}
 .monat-seite{height:189mm;display:flex;flex-direction:column}
 .monat{flex:1;display:grid;grid-template-columns:repeat(7,1fr);gap:3px;min-height:0}
 .wt{font-weight:700;font-size:10pt;padding:2px 4px;border-bottom:2px solid #f4c400}
@@ -125,7 +145,8 @@ footer{margin-top:8px;font-size:8.5pt;color:#6f8180}`;
   const MOBIL = typeof navigator !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
   // modus: 'diese' | 'naechste' | 'zwei' | 'monat' | 'naechsterMonat'
-  function teile(rows, modus, heute = new Date()) {
+  function teile(rows, modus, heute = new Date(), ausrichtung = 'hoch') {
+    const quer = ausrichtung === 'quer';
     const montag = weekStart(heute);
     const fuss = `<footer>Stand: ${deDate(heute)} · Quelle: Hallenplan (frisiahallen-hallenplan.github.io/hallenplan) · Spiele sind gelb hervorgehoben</footer>`;
     let seiten = '', dateiname = '';
@@ -136,21 +157,21 @@ footer{margin-top:8px;font-size:8.5pt;color:#6f8180}`;
       dateiname = `Friesenhalle_${MONATE[erster.getMonth()]}_${erster.getFullYear()}`;
     } else {
       const wochen = modus === 'diese' ? [montag] : modus === 'naechste' ? [addDays(montag, 7)] : [montag, addDays(montag, 7)];
-      seiten = wochen.map(m => wochenSeite(termineImZeitraum(rows, m, addDays(m, 6)), m, fuss)).join('');
+      seiten = wochen.map(m => wochenSeite(termineImZeitraum(rows, m, addDays(m, 6)), m, fuss, quer)).join('');
       dateiname = `Friesenhalle_KW${wochen.map(kalenderwoche).join('-')}`;
     }
-    const format = modus === 'monat' || modus === 'naechsterMonat' ? 'landscape' : 'portrait';
+    const format = quer || modus === 'monat' || modus === 'naechsterMonat' ? 'landscape' : 'portrait';
     return { dateiname, seiten, format };
   }
-  function dokument(rows, modus, heute = new Date()) {
-    const { dateiname, seiten, format } = teile(rows, modus, heute);
+  function dokument(rows, modus, heute = new Date(), ausrichtung = 'hoch') {
+    const { dateiname, seiten, format } = teile(rows, modus, heute, ausrichtung);
     return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${dateiname}</title><style>${css(format)}</style></head><body>${seiten}</body></html>`;
   }
 
-  function drucken(rows, modus) {
+  function drucken(rows, modus, ausrichtung = 'hoch') {
     // iOS-Safari druckt aus einem iframe die ganze Seite – auf Handy/Tablet zur eigenen Druckseite wechseln
     if (MOBIL) {
-      location.href = `druck.html?modus=${encodeURIComponent(modus)}`;
+      location.href = `druck.html?modus=${encodeURIComponent(modus)}&format=${encodeURIComponent(ausrichtung)}`;
       return;
     }
     const frame = document.createElement('iframe');
@@ -160,7 +181,7 @@ footer{margin-top:8px;font-size:8.5pt;color:#6f8180}`;
       frame.contentWindow.print();
       setTimeout(() => frame.remove(), 60000);
     };
-    frame.srcdoc = dokument(rows, modus);
+    frame.srcdoc = dokument(rows, modus, new Date(), ausrichtung);
     document.body.append(frame);
   }
 
