@@ -419,7 +419,7 @@ $('printClose').onclick = () => $('printDialog').close();
 $('printCancel').onclick = () => $('printDialog').close();
 $('printGo').onclick = () => {
   $('printDialog').close();
-  window.friesenhallenDruck.drucken(termine, $('printRange').value);
+  window.friesenhallenDruck.drucken(termine, $('printRange').value, $('printFormat').value);
 };
 
 // ---------- Start ----------
