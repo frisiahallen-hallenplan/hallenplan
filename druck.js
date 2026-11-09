@@ -95,16 +95,16 @@
   }
   const CSS_BASIS = `*{box-sizing:border-box}body{font:12pt/1.3 "Segoe UI",Arial,sans-serif;color:#173b3f;margin:0}
 .seite{break-after:page}.seite:last-of-type{break-after:auto}
-header{background:#f4c400;padding:9px 14px;border-radius:6px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:baseline;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-header h1{margin:0;font-size:19pt;color:#000}header p{margin:0;font-size:12pt;color:#000}
+header{background:#f4c400;padding:7px 14px;border-radius:6px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:baseline;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+header h1{margin:0;font-size:22pt;color:#000}header p{margin:0;font-size:13pt;color:#000}
 .liste{width:100%;border-collapse:collapse}
 .liste .tag{break-inside:avoid}
-.liste th{width:34mm;text-align:left;vertical-align:top;font-size:14pt;padding:6px 8px;border-top:2px solid #f4c400}
-.liste th span{display:block;font-size:11pt;font-weight:400;color:#6f8180}
-.liste td{padding:5px 8px;border-top:1px solid #e5dfd5;font-size:12.5pt;vertical-align:top}
+.liste th{width:38mm;text-align:left;vertical-align:top;font-size:16.5pt;line-height:1.15;padding:4px 8px;border-top:2px solid #f4c400}
+.liste th span{display:block;font-size:13pt;font-weight:400;color:#6f8180}
+.liste td{padding:3px 8px;border-top:1px solid #e5dfd5;font-size:15pt;line-height:1.2;vertical-align:top}
 .liste tr:first-child td{border-top:2px solid #f4c400}
-.liste td.zeit{width:33mm;white-space:nowrap;font-weight:700}
-.liste td.art{width:30mm;text-align:right;font-size:10.5pt;font-weight:600;color:#9a6b00}
+.liste td.zeit{width:40mm;white-space:nowrap;font-weight:700}
+.liste td.art{width:30mm;text-align:right;font-size:11.5pt;font-weight:600;color:#9a6b00}
 .liste tr.game td{background:#fdf3c4;-webkit-print-color-adjust:exact;print-color-adjust:exact}.liste tr.game td.art{color:#000}
 .liste td.leer{color:#6f8180;font-style:italic}
 .monat-seite{height:189mm;display:flex;flex-direction:column}
