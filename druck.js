@@ -112,16 +112,14 @@ h2{font-size:10.5pt;margin:0 0 5px;padding-bottom:3px;border-bottom:2px solid #f
 .m.game{background:#f4c400;font-weight:600}
 footer{margin-top:5px;font-size:7.5pt;color:#6f8180}`;
 
-  const LEISTE = '<div class="leiste"><button onclick="window.print()">🖨 Drucken / als PDF sichern</button>' +
-    '<span>iPhone/iPad: im Druckfenster oben rechts auf <b>Teilen</b> tippen → <b>In Dateien sichern</b> – oder direkt drucken.</span></div>';
   const LEISTE_CSS = `body{padding:14px}.leiste{display:flex;gap:14px;align-items:center;margin-bottom:12px;font-size:15px}
 .leiste button{font:600 18px Arial,sans-serif;padding:12px 20px;border:0;border-radius:8px;background:#173b3f;color:#fff}
+.leiste a{font-size:16px;color:#173b3f}
 @media print{body{padding:0}.leiste{display:none}}`;
   const MOBIL = typeof navigator !== 'undefined' && (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
   // modus: 'diese' | 'naechste' | 'zwei' | 'monat' | 'naechsterMonat'
-  // mitLeiste: eigener Tab (Handy/Tablet) mit Knopf zum Drucken, der im Ausdruck verschwindet
-  function dokument(rows, modus, heute = new Date(), mitLeiste = false) {
+  function teile(rows, modus, heute = new Date()) {
     const montag = weekStart(heute);
     const fuss = `<footer>Stand: ${deDate(heute)} · Quelle: Hallenplan (frisiahallen-hallenplan.github.io/hallenplan) · Spiele sind gelb hervorgehoben</footer>`;
     let seiten = '', dateiname = '';
@@ -135,17 +133,17 @@ footer{margin-top:5px;font-size:7.5pt;color:#6f8180}`;
       seiten = wochen.map(m => wochenSeite(termineImZeitraum(rows, m, addDays(m, 6)), m, fuss)).join('');
       dateiname = `Friesenhalle_KW${wochen.map(kalenderwoche).join('-')}`;
     }
-    return `<!doctype html><html lang="de"><head><meta charset="utf-8">${mitLeiste ? '<meta name="viewport" content="width=1120">' : ''}<title>${dateiname}</title><style>${CSS}${mitLeiste ? LEISTE_CSS : ''}</style></head><body>${mitLeiste ? LEISTE : ''}${seiten}</body></html>`;
+    return { dateiname, seiten };
+  }
+  function dokument(rows, modus, heute = new Date()) {
+    const { dateiname, seiten } = teile(rows, modus, heute);
+    return `<!doctype html><html lang="de"><head><meta charset="utf-8"><title>${dateiname}</title><style>${CSS}</style></head><body>${seiten}</body></html>`;
   }
 
   function drucken(rows, modus) {
-    // iOS-Safari druckt aus einem iframe die ganze Seite – dort einen eigenen Tab öffnen
+    // iOS-Safari druckt aus einem iframe die ganze Seite – auf Handy/Tablet zur eigenen Druckseite wechseln
     if (MOBIL) {
-      const tab = window.open('', '_blank');
-      if (!tab) { alert('Bitte Pop-ups für diese Seite erlauben, um den Plan zu drucken.'); return; }
-      tab.document.open();
-      tab.document.write(dokument(rows, modus, new Date(), true));
-      tab.document.close();
+      location.href = `druck.html?modus=${encodeURIComponent(modus)}`;
       return;
     }
     const frame = document.createElement('iframe');
@@ -159,5 +157,5 @@ footer{margin-top:5px;font-size:7.5pt;color:#6f8180}`;
     document.body.append(frame);
   }
 
-  window.friesenhallenDruck = { drucken, dokument, termineImZeitraum };
+  window.friesenhallenDruck = { drucken, dokument, teile, termineImZeitraum, css: CSS + LEISTE_CSS };
 })();
